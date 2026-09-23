@@ -25,14 +25,19 @@ npm install --install-strategy=nested
 echo "[install] Building bundle..."
 bun run build
 
+# The CLI entrypoint is a `#!/usr/bin/env bun` script; ensure it is executable
+# so the globally linked `aeon` bin runs regardless of the checked-out mode.
+chmod +x bin/aeon.js
+
 # 4. Install the `aeon` CLI globally under a user-writable npm prefix and make
-#    that prefix's bin available in future shells.
+#    that prefix's bin available in future shells. Use a one-shot --prefix flag
+#    rather than persisting `npm config set prefix`, which would conflict with
+#    nvm-managed Node and warn on every shell start.
 NPM_PREFIX="$HOME/.npm-global"
 mkdir -p "$NPM_PREFIX"
-npm config set prefix "$NPM_PREFIX"
 export PATH="$NPM_PREFIX/bin:$PATH"
 echo "[install] Installing aeon CLI globally..."
-npm install -g .
+npm install -g . --prefix "$NPM_PREFIX"
 
 # Ensure the global bin dir is on PATH for interactive shells (Bun's installer
 # already adds ~/.bun/bin to ~/.bashrc).
